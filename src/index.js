@@ -2,25 +2,25 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+//TODO: 
+//add img to squares:  with class(css) or <img> //  +done
+//add 2 mods: for gachi and another people  // +done
+//add end of game like "draw"
+//winner should be congratulated!
+
+//--------------------------------------------------------------------------\\
+
 function Square(props) {
     return (
         <button className="square" onClick={props.onClick}>
-            { props.value }
+            <div className = {props.value}></div>
         </button>
-    );
+    );//{ props.value } istead of div
 }
 
 class Board extends React.Component {
-    // constructor(props){
-    //     super(props);
-    //     this.state ={
-    //         squares : Array(9).fill(null),
-    //         isXNext : true,
-    //     };
-    // }
-
     renderSquare(i) {
-        return <Square 
+        return <Square
             value={this.props.squares[i]}
             onClick={() => this.props.onClick(i)}
         />; //передача propsa
@@ -57,8 +57,10 @@ class Game extends React.Component {
                 squares: Array(9).fill(null),
             }],
             isXNext: true,
-            stepNumber: 0
+            stepNumber: 0,
+            isToggleOn: false, //true for gachi-mod, false for normal
         }
+        this.handleSwitch = this.handleSwitch.bind(this);
     }
 
     jumpTo(step){
@@ -75,7 +77,11 @@ class Game extends React.Component {
         if (calculateWinner(squares) || squares[i]){
             return;
         }
-        squares[i] = this.state.isXNext ? 'X' : 'O';
+        if( this.state.isToggleOn === true){
+            squares[i] = this.state.isXNext ? 'r' : 's'; //here change props.value/class
+        } else {
+            squares[i] = this.state.isXNext ? 'x' : 'o';
+        }
         this.setState({
             history : history.concat([{
                 squares : squares,
@@ -85,6 +91,18 @@ class Game extends React.Component {
         });
     }
 
+    handleSwitch() {
+
+        this.setState(state => ({
+            isToggleOn: !state.isToggleOn,
+            stepNumber: 0,
+            history: [{
+                squares: Array(9).fill(null),
+            }],
+            isXNext: true,
+        }));
+    }
+
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
@@ -92,8 +110,8 @@ class Game extends React.Component {
 
         const moves = history.map((step, move) => {
             const desc = move ?
-            'Перейти к ходу #' + move :
-            'К началу игры';
+            'ПЕРЕЙТИ К ХОДУ #' + move :
+            'НАЧАЛО ИГРЫ';
             return(
                 <li key={move}>
                     <button onClick={() => this.jumpTo(move)}>{desc}</button>
@@ -102,8 +120,14 @@ class Game extends React.Component {
         });
 
         let status;
-        if (winner){
-            status = 'Выиграл ' + winner;
+        if (winner === 'r'){
+            status = 'Выиграл Ricardo';
+        } else if(winner === 's'){
+            status = 'Выиграл Posos';
+        } else if(winner === 'x'){
+            status = 'Выиграл X';
+        } else if(winner === 'o'){
+            status = 'Выиграл O';
         } else {
             status = 'Следующий ход: ' + (this.state.isXNext ? 'X' : 'O');
         }
@@ -116,14 +140,23 @@ class Game extends React.Component {
                     />
                 </div>
                 <div className="game-info">
-                    <div>{status}</div>
+                    <h1>{status}</h1>
+                    <div className="mods">
+                        <p>Gachi mod</p>
+                        <input 
+                            type="checkbox"
+                            id="toggle"
+                            onClick={this.handleSwitch}
+                            className="checkbox"
+                        />  
+                        <label htmlFor="toggle" className="switch"></label>
+                    </div>
                     <ol>{moves}</ol>
                 </div>
             </div>
         );
     }
 }
-
 // ========================================
 
 ReactDOM.render(
@@ -149,4 +182,4 @@ function calculateWinner(squares) {
       }
     }
     return null;
-  }
+}
