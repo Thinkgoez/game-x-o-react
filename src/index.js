@@ -2,11 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+import Congratulation from './components/congratulation/congratulation';
+// import { ReactComponent } from '*.svg';
+
 //TODO: 
 //add img to squares:  with class(css) or <img> //  +done
 //add 2 mods: for gachi and another people  // +done
-//add end of game like "draw"
-//winner should be congratulated!
+//add end of game like "draw" // +done, but it works with 9th step game, and with it coud be problems =_=
+//winner should be congratulated! //+done, but ot works so strange
+
 
 //--------------------------------------------------------------------------\\
 
@@ -74,9 +78,11 @@ class Game extends React.Component {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length -1];
         const squares = current.squares.slice();
+
         if (calculateWinner(squares) || squares[i]){
-            return;
+            return; //если есть победитель или squares[i] не пустой тогда return
         }
+        
         if( this.state.isToggleOn === true){
             squares[i] = this.state.isXNext ? 'r' : 's'; //here change props.value/class
         } else {
@@ -118,9 +124,8 @@ class Game extends React.Component {
                 </li>
             )
         });
-
         let status;
-        if (winner === 'r'){
+         if (winner === 'r'){
             status = 'Выиграл Ricardo';
         } else if(winner === 's'){
             status = 'Выиграл Posos';
@@ -128,32 +133,39 @@ class Game extends React.Component {
             status = 'Выиграл X';
         } else if(winner === 'o'){
             status = 'Выиграл O';
-        } else {
-            status = 'Следующий ход: ' + (this.state.isXNext ? 'X' : 'O');
+        } else if(winner === 'd'){
+            status = 'Ничья!';
+        } else if (this.state.stepNumber === 9){
+            status = 'Ничья!';
+        } else {status = 'Следующий ход: ' + (this.state.isXNext ? 'X' : 'O');
         }
         return (
-            <div className="game">
-                <div className="game-board">
-                    <Board 
-                        squares={current.squares}
-                        onClick={(i) => this.handleClick(i)}
-                    />
-                </div>
-                <div className="game-info">
-                    <h1>{status}</h1>
-                    <div className="mods">
-                        <p>Gachi mod</p>
-                        <input 
-                            type="checkbox"
-                            id="toggle"
-                            onClick={this.handleSwitch}
-                            className="checkbox"
-                        />  
-                        <label htmlFor="toggle" className="switch"></label>
+            <>
+                <div className="game">
+                    <div className="game-board">
+                        <Board 
+                            squares={current.squares}
+                            onClick={(i) => this.handleClick(i)}
+                        />
                     </div>
-                    <ol>{moves}</ol>
+                    <div className="game-info">
+                        <h1>{status}</h1>
+                        <div className="mods">
+                            <p>Gachi mod</p>
+                            <input 
+                                type="checkbox"
+                                id="toggle"
+                                onClick={this.handleSwitch}
+                                className="checkbox"
+                            />  
+                            <label htmlFor="toggle" className="switch"></label>
+                        </div>
+                        <ol>{moves}</ol>
+                    </div>
+                    
                 </div>
-            </div>
+                <Congratulation winner={winner} status={status}/>
+            </>
         );
     }
 }
@@ -179,6 +191,8 @@ function calculateWinner(squares) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
         return squares[a];
+      } else if ((squares.filter(item => item === null)) === ''){
+          return "d"; //чет это не пашет =_=, хотя должна была узнавать draw или нет
       }
     }
     return null;
